@@ -1,5 +1,5 @@
 // Package main - решение итоговой задачи "Ближайший ноль".
-// ID 82169984
+// ID 82203074
 // Вычислительная сложность O(n)
 // Пространственная сложность O(n)
 package main
@@ -38,22 +38,14 @@ func main() {
 		if strSlice[i] == zero {
 			digit = 0
 			temp = digit
-			if i == nY-1 {
-				writer.WriteString(fmt.Sprintf("%d", temp))
-			} else {
-				writer.WriteString(fmt.Sprintf("%d ", temp))
-			}
+			writer.WriteString(fmt.Sprintf("%d ", temp))
 			continue
 		}
 		digit++
 		if temp > digit {
 			temp = digit
 		}
-		if i == nY-1 {
-			writer.WriteString(fmt.Sprintf("%d", temp))
-		} else {
-			writer.WriteString(fmt.Sprintf("%d ", temp))
-		}
+		writer.WriteString(fmt.Sprintf("%d ", temp))
 	}
 	writer.Flush()
 }
