@@ -1,1 +1,1 @@
-# algoritms-and-structure-tasks
+# algorithm-and-structure-tasks
