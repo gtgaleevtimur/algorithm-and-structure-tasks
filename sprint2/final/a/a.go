@@ -1,5 +1,5 @@
 // Package main - решение задачи "Дек".
-// ID 82418315
+// ID 82646037
 // Для решения задачи "Дек" использовался двусвязный список, так как это решение наиболее подходит условиям задачи.
 // Под двусвязный список выделится значительно меньше памяти, это связано с тем, что,
 // в go массив создается на основе базовых типов и NIL значения для каждого элемента
@@ -13,28 +13,25 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 )
 
-type Node struct {
-	value string
-	next  *Node
-	prev  *Node
-}
-
 type Deck struct {
-	head    *Node
-	tail    *Node
+	data    []string
+	head    int
+	tail    int
 	size    int
 	maxSize int
 }
 
 func NewDeck(i int) *Deck {
 	return &Deck{
-		head:    nil,
-		tail:    nil,
+		data:    make([]string, i),
+		head:    0,
+		tail:    1,
 		size:    0,
 		maxSize: i,
 	}
@@ -44,94 +41,50 @@ func (d *Deck) isEmpty() bool {
 	return d.size == 0
 }
 
-func (d *Deck) pushBack(value string) {
+func (d *Deck) pushBack(value string) error {
 	if d.size == d.maxSize {
-		fmt.Println("error")
-		return
+		return errors.New("full")
 	}
-	node := &Node{
-		value: value,
-		next:  nil,
-		prev:  nil,
-	}
-	if d.size == 0 {
-		d.head = node
-		d.tail = node
-		d.size++
-		return
-	}
-	temp := d.tail
-	node.prev = temp
-	temp.next = node
-	d.tail = node
+	d.data[d.tail] = value
+	d.tail = (d.tail + 1) % d.maxSize
 	d.size++
+	return nil
 }
 
-func (d *Deck) pushFront(value string) {
+func (d *Deck) pushFront(value string) error {
 	if d.size == d.maxSize {
-		fmt.Println("error")
-		return
+		return errors.New("full")
 	}
-	node := &Node{
-		value: value,
-		next:  nil,
-		prev:  nil,
+	d.data[d.head] = value
+	d.head = (d.head - 1) % d.maxSize
+	if d.head == -1 {
+		d.head = d.maxSize - 1
 	}
-	if d.size == 0 {
-		d.head = node
-		d.tail = node
-		d.size++
-		return
-	}
-	temp := d.head
-	node.next = temp
-	temp.prev = node
-	d.head = node
 	d.size++
+	return nil
 }
 
-func (d *Deck) popBack() {
+func (d *Deck) popBack() (value string, err error) {
 	if d.isEmpty() {
-		fmt.Println("error")
-		return
+		return "", errors.New("empty")
 	}
-	if d.size == 1 {
-		value := d.head.value
-		d.head = nil
-		d.tail = nil
-		d.size--
-		fmt.Println(value)
-		return
+	d.tail = (d.tail - 1) % d.maxSize
+	if d.tail == -1 {
+		d.tail = d.maxSize - 1
 	}
-	value := d.tail.value
-	newTail := d.tail.prev
-	newTail.next = nil
-	d.tail.prev = nil
-	d.tail = newTail
+	value = d.data[d.tail]
 	d.size--
-	fmt.Println(value)
+	return value, nil
 }
 
-func (d *Deck) popFront() {
+func (d *Deck) popFront() (value string, err error) {
 	if d.isEmpty() {
-		fmt.Println("error")
-		return
+		return "", errors.New("empty")
 	}
-	if d.size == 1 {
-		value := d.head.value
-		d.head = nil
-		d.tail = nil
-		d.size--
-		fmt.Println(value)
-		return
-	}
-	value := d.head.value
-	newHead := d.head.next
-	d.head.next = nil
-	newHead.prev = nil
-	d.head = newHead
+	d.head = (d.head + 1) % d.maxSize
+	value = d.data[d.head]
 	d.size--
-	fmt.Println(value)
+	return value, nil
 }
 
 func main() {
@@ -150,18 +103,32 @@ func main() {
 		switch len(command) {
 		case 1:
 			if com == "pop_back" {
-				deck.popBack()
+				val, err := deck.popBack()
+				if err != nil {
+					fmt.Println("error")
+					continue
+				}
+				fmt.Println(val)
 			}
 			if com == "pop_front" {
-				deck.popFront()
+				val, err := deck.popFront()
+				if err != nil {
+					fmt.Println("error")
+					continue
+				}
+				fmt.Println(val)
 			}
 		case 2:
 			arg := command[1]
 			if com == "push_back" {
-				deck.pushBack(arg)
+				if err := deck.pushBack(arg); err != nil {
+					fmt.Println("error")
+				}
 			}
 			if com == "push_front" {
-				deck.pushFront(arg)
+				if err := deck.pushFront(arg); err != nil {
+					fmt.Println("error")
+				}
 			}
 		}
 	}

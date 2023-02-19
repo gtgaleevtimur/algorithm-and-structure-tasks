@@ -1,5 +1,5 @@
 // Package main - решение задачи "Калькулятор".
-// ID 82429346
+// ID 82622246
 // Решение согласно условиям задачи реализовал через стек на основе слайса.
 // Вычислительная сложность: 0(1)
 // Пространственная сложность: 0(n)
@@ -14,19 +14,39 @@ import (
 	"strings"
 )
 
+type Stack struct {
+	data []int
+}
+
+func NewStack() *Stack {
+	return &Stack{
+		data: make([]int, 0),
+	}
+}
+
+func (s *Stack) add(d int) {
+	s.data = append(s.data, d)
+}
+
+func (s *Stack) pop() int {
+	temp := s.data[len(s.data)-1]
+	s.data = s.data[:len(s.data)-1]
+	return temp
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	str, _ := reader.ReadString('\n')
 	str = strings.TrimSpace(str)
 	strLine := strings.Split(str, " ")
-	var stack []int
+	stack := NewStack()
 	for _, v := range strLine {
 		if digit, err := strconv.Atoi(v); err == nil {
-			stack = append(stack, digit)
+			stack.add(digit)
 			continue
 		}
-		first, second := stack[len(stack)-2], stack[len(stack)-1]
-		stack = stack[:(len(stack) - 2)]
+		second := stack.pop()
+		first := stack.pop()
 		var result int
 		switch v {
 		case "+":
@@ -43,7 +63,7 @@ func main() {
 				result = first / second
 			}
 		}
-		stack = append(stack, result)
+		stack.add(result)
 	}
-	fmt.Println(stack[len(stack)-1])
+	fmt.Println(stack.pop())
 }
