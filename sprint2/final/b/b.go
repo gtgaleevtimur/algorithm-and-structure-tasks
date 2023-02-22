@@ -1,7 +1,8 @@
 // Package main - решение задачи "Калькулятор".
-// ID 82622246
+// ID 82782226
 // Решение согласно условиям задачи реализовал через стек на основе слайса.
-// Вычислительная сложность: 0(1)
+// Для проверки доступности операции создается хэш-таблица с математическими функциями.
+// Вычислительная сложность: 0(n)
 // Пространственная сложность: 0(n)
 package main
 
@@ -40,6 +41,7 @@ func main() {
 	str = strings.TrimSpace(str)
 	strLine := strings.Split(str, " ")
 	stack := NewStack()
+	opMap := mapInit()
 	for _, v := range strLine {
 		if digit, err := strconv.Atoi(v); err == nil {
 			stack.add(digit)
@@ -48,22 +50,33 @@ func main() {
 		second := stack.pop()
 		first := stack.pop()
 		var result int
-		switch v {
-		case "+":
-			result = first + second
-		case "-":
-			result = first - second
-		case "*":
-			result = first * second
-		case "/":
-			if first < 0 {
-				temp := math.Floor(float64(first) / float64(second))
-				result = int(temp)
-			} else {
-				result = first / second
-			}
+		if op, ok := opMap[v]; ok {
+			result = op(first, second)
 		}
 		stack.add(result)
 	}
 	fmt.Println(stack.pop())
+}
+
+type MathFunc func(int, int) int
+
+func mapInit() map[string]MathFunc {
+	myMap := make(map[string]MathFunc)
+	myMap["+"] = func(i int, i2 int) int {
+		return i + i2
+	}
+	myMap["-"] = func(i int, i2 int) int {
+		return i - i2
+	}
+	myMap["*"] = func(i int, i2 int) int {
+		return i * i2
+	}
+	myMap["/"] = func(i int, i2 int) int {
+		if i < 0 {
+			return int(math.Floor(float64(i) / float64(i2)))
+		} else {
+			return i / i2
+		}
+	}
+	return myMap
 }

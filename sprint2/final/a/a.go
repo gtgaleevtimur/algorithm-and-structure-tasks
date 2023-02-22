@@ -1,5 +1,5 @@
 // Package main - решение задачи "Дек".
-// ID 82646037
+// ID 82780696
 // Для решения задачи "Дек" использовался двусвязный список, так как это решение наиболее подходит условиям задачи.
 // Под двусвязный список выделится значительно меньше памяти, это связано с тем, что,
 // в go массив создается на основе базовых типов и NIL значения для каждого элемента
@@ -7,7 +7,7 @@
 // к тому же мы вызовем увеличение выделенной памяти под этот массив, так как под каждый элемент будь он пустым или нет
 // выделится занимаемая этим типом память. В двусязном списке основанном на указателях такого соответственно не произойдет.
 // Ведь сама структура списка может быть и предполагает большее значение хранимых объектов, но не всегда это реализует.
-// Вычислительная сложность: 0(1)
+// Вычислительная сложность: 0(n)
 // Пространственная сложность: 0(n)
 package main
 
@@ -41,8 +41,12 @@ func (d *Deck) isEmpty() bool {
 	return d.size == 0
 }
 
+func (d *Deck) isFull() bool {
+	return d.size == d.maxSize
+}
+
 func (d *Deck) pushBack(value string) error {
-	if d.size == d.maxSize {
+	if d.isFull() {
 		return errors.New("full")
 	}
 	d.data[d.tail] = value
@@ -52,7 +56,7 @@ func (d *Deck) pushBack(value string) error {
 }
 
 func (d *Deck) pushFront(value string) error {
-	if d.size == d.maxSize {
+	if d.isFull() {
 		return errors.New("full")
 	}
 	d.data[d.head] = value
@@ -102,34 +106,42 @@ func main() {
 		com := command[0]
 		switch len(command) {
 		case 1:
-			if com == "pop_back" {
-				val, err := deck.popBack()
-				if err != nil {
-					fmt.Println("error")
-					continue
-				}
-				fmt.Println(val)
-			}
-			if com == "pop_front" {
-				val, err := deck.popFront()
-				if err != nil {
-					fmt.Println("error")
-					continue
-				}
-				fmt.Println(val)
-			}
+			commonPop(deck, com)
 		case 2:
 			arg := command[1]
-			if com == "push_back" {
-				if err := deck.pushBack(arg); err != nil {
-					fmt.Println("error")
-				}
-			}
-			if com == "push_front" {
-				if err := deck.pushFront(arg); err != nil {
-					fmt.Println("error")
-				}
-			}
+			commonPush(deck, com, arg)
 		}
+	}
+}
+
+func commonPush(d *Deck, command, arg string) {
+	switch command {
+	case "push_back":
+		if err := d.pushBack(arg); err != nil {
+			fmt.Println("error")
+		}
+	case "push_front":
+		if err := d.pushFront(arg); err != nil {
+			fmt.Println("error")
+		}
+	}
+}
+
+func commonPop(d *Deck, command string) {
+	switch command {
+	case "pop_back":
+		val, err := d.popBack()
+		if err != nil {
+			fmt.Println("error")
+			return
+		}
+		fmt.Println(val)
+	case "pop_front":
+		val, err := d.popFront()
+		if err != nil {
+			fmt.Println("error")
+			return
+		}
+		fmt.Println(val)
 	}
 }
