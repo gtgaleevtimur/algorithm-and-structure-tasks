@@ -1,5 +1,5 @@
 // Package main - решение задачи "Дек".
-// ID 82780696
+// ID 82947268
 // Для решения задачи "Дек" использовался двусвязный список, так как это решение наиболее подходит условиям задачи.
 // Под двусвязный список выделится значительно меньше памяти, это связано с тем, что,
 // в go массив создается на основе базовых типов и NIL значения для каждого элемента
@@ -50,7 +50,7 @@ func (d *Deck) pushBack(value string) error {
 		return errors.New("full")
 	}
 	d.data[d.tail] = value
-	d.tail = (d.tail + 1) % d.maxSize
+	d.tail = d.nextIndex(d.tail, 1)
 	d.size++
 	return nil
 }
@@ -60,10 +60,7 @@ func (d *Deck) pushFront(value string) error {
 		return errors.New("full")
 	}
 	d.data[d.head] = value
-	d.head = (d.head - 1) % d.maxSize
-	if d.head == -1 {
-		d.head = d.maxSize - 1
-	}
+	d.head = d.nextIndex(d.head, -1)
 	d.size++
 	return nil
 }
@@ -72,10 +69,7 @@ func (d *Deck) popBack() (value string, err error) {
 	if d.isEmpty() {
 		return "", errors.New("empty")
 	}
-	d.tail = (d.tail - 1) % d.maxSize
-	if d.tail == -1 {
-		d.tail = d.maxSize - 1
-	}
+	d.tail = d.nextIndex(d.tail, -1)
 	value = d.data[d.tail]
 	d.size--
 	return value, nil
@@ -85,11 +79,22 @@ func (d *Deck) popFront() (value string, err error) {
 	if d.isEmpty() {
 		return "", errors.New("empty")
 	}
-	d.head = (d.head + 1) % d.maxSize
+	d.head = d.nextIndex(d.head, 1)
 	value = d.data[d.head]
 	d.size--
 	return value, nil
 }
+
+func (d *Deck) nextIndex(tempIndex, vector int) int {
+	result := (tempIndex + vector) % d.maxSize
+	if result == -1 {
+		result = d.maxSize - 1
+	}
+	return result
+}
+
+type pushFunc func(value string) error
+type popFunc func() (result string, err error)
 
 func main() {
 	var n int
@@ -99,6 +104,15 @@ func main() {
 	deck := NewDeck(m)
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanLines)
+	pushCommands := map[string]pushFunc{
+		"push_back":  deck.pushBack,
+		"push_front": deck.pushFront,
+	}
+
+	popCommands := map[string]popFunc{
+		"pop_back":  deck.popBack,
+		"pop_front": deck.popFront,
+	}
 	for i := 0; i < n; i++ {
 		scanner.Scan()
 		line := scanner.Text()
@@ -106,42 +120,16 @@ func main() {
 		com := command[0]
 		switch len(command) {
 		case 1:
-			commonPop(deck, com)
+			if val, err := popCommands[com](); err != nil {
+				fmt.Println("error")
+			} else {
+				fmt.Println(val)
+			}
 		case 2:
 			arg := command[1]
-			commonPush(deck, com, arg)
+			if err := pushCommands[com](arg); err != nil {
+				fmt.Println("error")
+			}
 		}
-	}
-}
-
-func commonPush(d *Deck, command, arg string) {
-	switch command {
-	case "push_back":
-		if err := d.pushBack(arg); err != nil {
-			fmt.Println("error")
-		}
-	case "push_front":
-		if err := d.pushFront(arg); err != nil {
-			fmt.Println("error")
-		}
-	}
-}
-
-func commonPop(d *Deck, command string) {
-	switch command {
-	case "pop_back":
-		val, err := d.popBack()
-		if err != nil {
-			fmt.Println("error")
-			return
-		}
-		fmt.Println(val)
-	case "pop_front":
-		val, err := d.popFront()
-		if err != nil {
-			fmt.Println("error")
-			return
-		}
-		fmt.Println(val)
 	}
 }
